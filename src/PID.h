@@ -2,7 +2,7 @@
 #define PID_H
 
 class PID {
-public:
+ public:
   /*
   * Errors
   */
@@ -12,11 +12,21 @@ public:
 
   /*
   * Coefficients
-  */ 
+  */
   double Kp;
   double Ki;
   double Kd;
+  unsigned int i;
+  unsigned int iter;
+  unsigned int n_step;
+  double dp[3];
+  double p[3];
+  double tolorance;
+  double best_error;
+  double error;
+  bool is_twiddle;
 
+  enum {IDLE, INC, DEC, DONE} twiddle_state;
 
 
   /*
@@ -43,6 +53,9 @@ public:
   * Calculate the total PID error.
   */
   double TotalError();
+  void TwiddleInit(double Kp, double Ki, double Kd);
+  void Twiddle();
 };
+
 
 #endif /* PID_H */
