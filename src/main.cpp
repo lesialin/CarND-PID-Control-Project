@@ -3,6 +3,7 @@
 #include "json.hpp"
 #include "PID.h"
 #include <math.h>
+#include <stdlib.h>
 
 // for convenience
 using json = nlohmann::json;
@@ -27,14 +28,33 @@ std::string hasData(std::string s) {
   return "";
 }
 
-int main() {
+int main(int argc, char * argv[]) {
   uWS::Hub h;
 
   PID pid;
   // Initialize the pid variable.
+  double Kp, Ki, Kd;
 
-  //just manually set initial parameter to make car in the track
-  pid.TwiddleInit(0.1, 0.05, 3.0);
+
+  /*
+  //Tune the initial gain parameter to make car in the track
+  // Tune parameters:
+  // Kp = 0.0, Ki = 0.0, Kd = 0.0
+  // Kp = 0.1, Ki = 0.0, Kd = 0.0
+  // Kp = 0.1, Ki = 0.0, Kd = 1.0
+  // Kp = 0.1, Ki = 0.05, Kd = 1.0
+    Kp = atof(argv[1]);
+    Ki = atof(argv[2]);
+    Kd = atof(argv[3]);
+    pid.Init(Kp, Ki, Kd);
+  */
+
+  Kp = 0.1;
+  Ki = 0.05;
+  Kd = 1.0;
+  pid.TwiddleInit(Kp, Ki, Kd);
+
+
   if (!pid.is_twiddle) {
 
     //PID parameters from twiddlw function
@@ -42,9 +62,10 @@ int main() {
     std::cout << "Kp = " << pid.Kp << std::endl;
     std::cout << "Ki = " << pid.Ki << std::endl;
     std::cout << "Kd = " << pid.Kd << std::endl;
+    //the final gain by twiddle would be:
+    // Kp = 0.09, Ki = 0.04, Kd = 1.1
     pid.Init(pid.Kp, pid.Ki, pid.Kd);
   }
-
 
   h.onMessage([&pid](uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, uWS::OpCode opCode) {
     // "42" at the start of the message means there's a websocket message event.
@@ -71,6 +92,7 @@ int main() {
           pid.UpdateError(cte);
           steer_value = pid.TotalError();
           //tuning PID parameter
+
           if (pid.is_twiddle) {
             pid.Twiddle();
           }

@@ -57,14 +57,14 @@ void PID::TwiddleInit(double Kp, double Ki, double Kd) {
   p_error = 0.0;
   i_error = 0.0;
   d_error = 0.0;
-  dp[0] = 0.05;
-  dp[1] = 0.01;
+  dp[0] = 0.01;
+  dp[1] = 0.005;
   dp[2] = 0.1;
   p[0] = Kp;
   p[1] = Ki;
   p[2] = Kd;
 
-  tolorance = 0.01;
+  tolorance = 0.05;
   n_step = 100;
   is_twiddle = true;
   iter  = 0;
