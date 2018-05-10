@@ -37,62 +37,57 @@ There's an experimental patch for windows in this [PR](https://github.com/udacit
 
 Tips for setting up your environment can be found [here](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/0949fca6-b379-42af-a919-ee50aa304e6a/lessons/f758c44c-5e40-4e01-93b5-1a82aa4e044f/concepts/23d376c7-0195-4276-bdf0-e02f1f3c665d)
 
-## Editor Settings
+## PID Parameter Setting
 
-We've purposefully kept editor configuration files out of this repo in order to
-keep it as simple and environment agnostic as possible. However, we recommend
-using the following settings:
+To selection a proper P/I/D control parameters, I used Twiddle algorithm to optimize these parameters.
 
-* indent using spaces
-* set tab width to 2 spaces (keeps the matrices in source code aligned)
+At first, I tried the initial PID parameters in {Kp,Ki,Kd} = {0,0,0}, which made car departure from the track easily. So I manually tuned the initial parameters into {Kp,Ki,Kd} = {0.1, 0.05, 3.0}, you can find this initialization in main.cpp line 37 `pid.TwiddleInit(0.1, 0.05, 3.0);`
 
-## Code Style
+To adjust PID parameters, I applied the hyper-parameters in TwiddleInit, which is in PID.cpp  
 
-Please (do your best to) stick to [Google's C++ style guide](https://google.github.io/styleguide/cppguide.html).
+```
+void PID::TwiddleInit(double Kp, double Ki, double Kd) {
+  
+  this->Kp = Kp;
+  this->Ki = Ki;
+  this->Kd = Kd;
+  p_error = 0.0;
+  i_error = 0.0;
+  d_error = 0.0;
+  dp[0] = 0.05;
+  dp[1] = 0.01;
+  dp[2] = 0.1;
+  p[0] = Kp;
+  p[1] = Ki;
+  p[2] = Kd;
 
-## Project Instructions and Rubric
+  tolorance = 0.01;
+  n_step = 100;
+  is_twiddle = true;
+  iter  = 0;
+  best_error = 0.0;
+  error = 0.0;
+  twiddle_state = IDLE;
+  i = 0;
 
-Note: regardless of the changes you make, your project must be buildable using
-cmake and make!
 
-More information is only accessible by people who are already enrolled in Term 2
-of CarND. If you are enrolled, see [the project page](https://classroom.udacity.com/nanodegrees/nd013/parts/40f38239-66b6-46ec-ae68-03afd8a601c8/modules/f1820894-8322-4bb3-81aa-b26b3c6dcbaf/lessons/e8235395-22dd-4b87-88e0-d108c5e5bbf4/concepts/6a4d8d42-6a04-4aa6-b284-1697c0fd6562)
-for instructions and the project rubric.
+}
 
-## Hints!
+```
 
-* You don't have to follow this directory structure, but if you do, your work
-  will span all of the .cpp files here. Keep an eye out for TODOs.
+After PID parameters optimized by Twiddle function, the PID parameters would be set in PID control initialization. These would be main.cpp 37  to  46 line
 
-## Call for IDE Profiles Pull Requests
+```
+if (!pid.is_twiddle) {
 
-Help your fellow students!
+    //PID parameters from twiddlw function
+    std::cout << "tiwddle PID:" << std::endl;
+    std::cout << "Kp = " << pid.Kp << std::endl;
+    std::cout << "Ki = " << pid.Ki << std::endl;
+    std::cout << "Kd = " << pid.Kd << std::endl;
+    pid.Init(pid.Kp, pid.Ki, pid.Kd);
+  }
 
-We decided to create Makefiles with cmake to keep this project as platform
-agnostic as possible. Similarly, we omitted IDE profiles in order to we ensure
-that students don't feel pressured to use one IDE or another.
+```
 
-However! I'd love to help people get up and running with their IDEs of choice.
-If you've created a profile for an IDE that you think other students would
-appreciate, we'd love to have you add the requisite profile files and
-instructions to ide_profiles/. For example if you wanted to add a VS Code
-profile, you'd add:
-
-* /ide_profiles/vscode/.vscode
-* /ide_profiles/vscode/README.md
-
-The README should explain what the profile does, how to take advantage of it,
-and how to install it.
-
-Frankly, I've never been involved in a project with multiple IDE profiles
-before. I believe the best way to handle this would be to keep them out of the
-repo root to avoid clutter. My expectation is that most profiles will include
-instructions to copy files to a new location to get picked up by the IDE, but
-that's just a guess.
-
-One last note here: regardless of the IDE used, every submitted project must
-still be compilable with cmake and make./
-
-## How to write a README
-A well written README file can enhance your project and portfolio.  Develop your abilities to create professional README files by completing [this free course](https://www.udacity.com/course/writing-readmes--ud777).
-
+In the simulation, the optimization parameters are {Kp,Ki,Kd} = {0.05, 0.061, 3.1} from Twiddle algorithm.
